@@ -1,0 +1,39 @@
+{% extends template %}
+
+  {% block content %}
+
+	<div class="ui container">
+		<h4 class="ui header">{{ title }}</h4>
+		<table class="ui striped table">
+        	<thead>
+          	<tr class = "row">
+                <th>Supplier PO</th>
+                <th>Date Issued</th>
+                <th>Supplier</th>
+                <th>Delivery Date</th>
+                <th>Total Amount</th>
+          	</tr>
+    		</thead>
+    		<tbody>
+			{% if mr %}
+				{% for mr in mr %}
+    			<tr class = "row">
+                    <td> 
+                        <a href="{% url 'inventory:supplierPO_details' mr.id %}">{{ mr }}</a>
+                    </td>
+					<td>{{ mr.date_issued }}</td>
+                    <td>{{ mr.supplier }}</td>
+                    <td>{{ mr.delivery_date }}</td>
+                    <td>{{ mr.total_amount }}</td>
+    			</tr>
+				{% endfor %}
+			{% else %}
+			<td>
+				<p>There are no Supplier PO to display</p>
+			</td>
+			{% endif %}
+			</tbody>
+    	</table>
+	</div>
+
+{% endblock %}

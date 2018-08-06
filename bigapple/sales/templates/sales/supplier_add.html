@@ -1,0 +1,50 @@
+{% extends "general_manager_page_ui.html" %} 
+
+{% block content %}
+<h3 class="ui dividing header">{{ title }}</h3>
+
+<div class="ui centered grid">
+    <div class="six wide tablet eight wide computer column">
+        <form class="ui form" method="POST">
+            {% csrf_token %}
+            <div class="field">
+              <label>Company Name</label>
+              {{ form.company_name }}
+            </div>
+            <div class = "two fields">
+              <div class="field">
+                <label>First Name</label>
+                {{ form.first_name }}
+              </div>
+              <div class="field">
+                <label>Last Name</label>
+                {{ form.last_name }}
+              </div>
+            </div>
+            <div class = "two fields">
+              <div class="field">
+                <label>Mobile No.</label>
+                {{ form.mobile_number }}
+              </div>
+              <div class="field">
+                <label>Email Address</label>
+                {{ form.email_address }}
+              </div>
+            </div>
+            <div class="field">
+              <label>Description</label>
+              {{ form.description }}
+            </div>
+          
+            <div class="center">
+                <button class="ui green basic button" type="submit">{{ actiontype }}</button>
+                <button class="ui red basic button" typle="clear">Back</button>
+            </div>
+          </form>
+
+    </div>
+</div>
+
+
+
+{% endblock %}

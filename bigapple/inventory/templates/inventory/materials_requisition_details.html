@@ -1,0 +1,69 @@
+{% extends template %}
+
+{% block content %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="{{ style }}"> {{ message }}</div>
+    {% endfor %}
+{% endif %}
+<div class = "ui centered grid">
+    <div class="six wide tablet ten wide computer column">
+        {{msg}}
+        <form id = "myForm" class="ui form segment" action = "{% url 'inventory:materials_requisition_approval' mr.id%}" method="POST" role="form">
+            {% csrf_token %}
+            <h2 class="ui header">MR {{ title }}</h2>
+            <div class="two fields">
+                <div class = "field">
+                    <label for="">Date Issued</label>
+                    <span>{{ mr.date_issued }}</span>
+                </div>
+                <div class = "field">
+                    <label for="">Status:</label>
+                    <span id = "status">{{ mr.status }}</span>
+                </div>
+            </div>
+            <table class="ui table">
+                <thead>
+                    <th class="five wide">Item</th>
+                    <th class="four wide">Quantity</th>
+                    <th class="seven wide">For</th>
+                </thead>
+                <tbody>
+                    {% for mri in mri %}
+                    <tr>
+                        <td>{{ mri.item }}</td>
+                        <td>{{ mri.quantity }}</td>
+                        <td>{{ mri.to_be_used_for }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class = "ui centered grid" style = "padding:10px;">
+                    <input id = 'approve_btn' class ="ui positive basic button" style = "margin:5px;" type ="submit" value="Approve" name = "approve">
+                    <!-- <input class ="ui negative basic button" style = "margin:5px;" type ="submit" value = "Decline" name = "decline"> -->
+            </div>
+        </form>
+        <a href="{% url 'inventory:materials_requisition_list'%}">Back</a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+    <script>
+        $( document ).ready(function() {
+            $(function() {
+                if($('#status').text()=='approved'){
+                    $('#approve_btn').prop('disabled', true);
+                }
+            });
+            $(function() {
+                $( ".message" ).fadeOut(5000, function() {
+                    // Animation complete.
+                });
+            });
+        });
+    </script>
+
+{%endblock %}

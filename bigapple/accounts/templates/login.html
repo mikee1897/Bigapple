@@ -1,0 +1,26 @@
+{% extends 'login_register_ui.html' %} {% block login %}
+
+<form class = "ui form" method="post" action="{% url 'login' %}">
+    {% csrf_token %} {%if form.errors %}
+    <p>Error, incorrect username or password.</p>
+    {% endif %} {% if next %}
+    <p>You can't access this page</p>
+    {% endif %}
+
+    <div class="field">
+        <label>Username: {{form.username}}</label>
+    </div>
+    <div class = "field">
+        <label>Password: {{form.password}}</label>
+    </div>
+        
+
+    <div class="center">
+        <input class="ui button" type="submit" value="Login">
+
+    </div>
+</form>
+
+
+
+{% endblock %}

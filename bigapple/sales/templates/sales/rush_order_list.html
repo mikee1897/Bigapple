@@ -1,0 +1,47 @@
+{% extends template %}
+
+{% block content %}
+<div class="sixteen wide column">
+    <table>
+        <thead>
+            <tr>
+                <th>Client</th>
+                <th>Purchase Order ID</th>
+                <th>Date Issued</th>
+                <th>Date Required</th>
+                <th>Lead Time</th>
+                <th>Items</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for rush_order in rush_order %}
+            <tr>
+                <td>
+                    ({{ rush_order.client }})
+                </td>
+                <td>
+                    ({{ rush_order }})
+                </td>
+                <td>
+                    ({{ rush_order.date_issued }})
+                </td>
+                <td>
+                    ({{ rush_order.date_required }})
+                </td>
+                <td>
+                    ({{ rush_order. }}) #TODO: refer lead time method
+                </td>
+                #TODO: for loop for rush order items
+                <td>
+                    ({{ rush_order.date_issued }})
+                </td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+</div>
+
+
+{% endblock %}

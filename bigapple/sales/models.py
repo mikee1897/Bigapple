@@ -45,7 +45,7 @@ class Product(models.Model):
     description = models.CharField('description', max_length=200)
 
     def __str__(self):
-        return str(self.id) + ' : ' +str(self.products)
+        return str(self.products)
 
     def save(self, *args, **kwargs):
         if self.products == "HDPE":
@@ -56,7 +56,21 @@ class Product(models.Model):
 
 #TODO Add Lamination as production cost
 class ProductionCost(models.Model):
-    cost_type = models.CharField('cost_type', max_length=200)
+
+    COST = (
+        ('Electricity', 'Electricity'),
+        ('Mark up', 'Mark up'),
+        ('Ink', 'Ink'),
+        ('Cylinder', 'Cylinder'),
+        ('Art Labor', 'Art Labor'),
+        ('Artwork', 'Artwork'),
+        ('Lamination', 'Lamination'),
+        ('HDPE_Materials', 'HDPE_Materials'),
+        ('LDPE_Materials', 'LDPE_Materials'),
+        ('PP_Materials', 'PP_Materials'),
+    )
+
+    cost_type = models.CharField('cost_type', max_length=200, choices=COST)
     cost = models.DecimalField('cost', decimal_places=2, max_digits=12, default=0)
 
     def __str__(self):
@@ -366,6 +380,7 @@ class Supplier(models.Model):
     mobile_number = models.CharField('mobile_number', max_length=11)
     email_address = models.CharField('email_address', max_length=200)
     description = models.CharField('description', max_length=200, blank=True)
+    item_count = models.IntegerField('item_count', default=0)
 
     def contact_person(self):
         return self.last_name + ", " + str(self.first_name)

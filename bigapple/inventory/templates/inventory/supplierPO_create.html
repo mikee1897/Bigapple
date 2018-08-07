@@ -1,0 +1,37 @@
+{% extends template %}
+
+  {% block content %}
+
+	<div class="ui container">
+        <h2 class="ui header">{{ title }}</h2>
+        {% csrf_token %}
+        <table class="ui striped table">
+        	<thead >
+          	<tr class = "row">
+                <th class="six wide">Supplier</th>
+                <th class="six wide">Items</th>
+                <th class="five wide"></th>
+          	</tr>
+    		</thead>
+    		<tbody>
+                {% if data %}
+                {% for data in data %}
+                    <tr>
+                        <td>{{ data.company_name }}</td>
+                        <td>{{ data.item_count }}</td>
+                        <td>
+                            <a class = "mini blue ui button" href="{% url 'inventory:supplierPO_form' data.id%}">Create PO</a>
+                        </td>
+                    </tr>
+                    
+                {% endfor %}
+
+                {% else %}
+                    <td>Currently have no Supplier!</td>
+                {% endif %}
+			</tbody>
+        </table>
+
+	</div>
+
+{% endblock %}

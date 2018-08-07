@@ -401,6 +401,7 @@ def job_order_details(request, id):
 		
     data = JobOrder.objects.get(id=id)
     client_po_data = ClientPO.objects.get(id = data.client_po.id)
+    items = ClientItem.objects.filter(client_po = client_po_data.id)
     form = JODetailsForm(request.POST or None)
     extrusion = ExtruderSchedule.objects.filter(job_order=data.id).order_by('date', 'time_out')
     printing = PrintingSchedule.objects.filter(job_order=data.id).order_by('date', 'time_out')
@@ -417,13 +418,14 @@ def job_order_details(request, id):
     form.fields["remarks"].initial = data.remarks
 
     context = {
-      'form': form,
-      'title' : data.job_order,
-      'data': data,
-      'extrusion': extrusion,
-      'printing': printing,
-      'cutting': cutting,
-	   'template' : template
+        'items': items,
+        'form': form,
+        'title' : data.job_order,
+        'data': data,
+        'extrusion': extrusion,
+        'printing': printing,
+        'cutting': cutting,
+	    'template' : template
     }
     return render(request, 'production/job_order_details.html', context)
 
@@ -570,7 +572,6 @@ def jo_approval(request, id):
 
     print("JO:" ,jo_id)
     print("Client PO:" ,jo_id.client_po.id)
-    print(client_items.products)
 
     #variables
     HDPE = 0
@@ -581,8 +582,6 @@ def jo_approval(request, id):
 
     client_items = ClientItem.objects.filter(client_po = jo_id.client_po.id)
 
-    print (client_items.products)
-
     for data in client_items:
 
         if data.products.products == "HDPE":
@@ -592,7 +591,6 @@ def jo_approval(request, id):
             HDPE+= x*3
             PP+= x*2  
             PET+= x*1
-            i = i+1
 
         elif data.products.products == "PP":
             q = data.quantity
@@ -600,7 +598,6 @@ def jo_approval(request, id):
             PP+= x*3
             PET+= x*2  
             HDPE+= x*1
-            i = i+1
 
         elif data.products.products == "LDPE":
             q = data.quantity
@@ -608,7 +605,8 @@ def jo_approval(request, id):
             LDPE+= x*3
             LLDPE+= x*2  
             HDPE+= x*1
-            i = i+1
+
+        print (data.products)
 
     print('MatreqItemsQuantity: ', LDPE, HDPE, PP, PET, LLDPE)
 
@@ -616,15 +614,17 @@ def jo_approval(request, id):
     MaterialRequisition.objects.create(jo = jo_id)
     mr_id = MaterialRequisition.objects.last() 
 
+    print("MR-ID: ", mr_id.id )
+
     if LDPE != 0:
-        MaterialRequisitionItems.objects.create(matreq = mr_id.id, item = "LDPE", quantity = LDPE)
+        MaterialRequisitionItems.objects.create(matreq = mr_id, jo = jo_id, item = "LDPE", quantity = LDPE)
     if HDPE != 0:
-        MaterialRequisitionItems.objects.create(matreq = mr_id.id, item = "HDPE", quantity = HDPE)
+        MaterialRequisitionItems.objects.create(matreq = mr_id, jo = jo_id, item = "HDPE", quantity = HDPE)
     if PP != 0:
-        MaterialRequisitionItems.objects.create(matreq = mr_id.id, item = "PP", quantity = PP)
+        MaterialRequisitionItems.objects.create(matreq = mr_id, jo = jo_id, item = "PP", quantity = PP)
     if PET != 0:
-        MaterialRequisitionItems.objects.create(matreq = mr_id.id, item = "PET", quantity = PET)
+        MaterialRequisitionItems.objects.create(matreq = mr_id, jo = jo_id, item = "PET", quantity = PET)
     if LLDPE != 0:
-        MaterialRequisitionItems.objects.create(matreq = mr_id.id, item = "LLDPE", quantity = LLDPE)
+        MaterialRequisitionItems.objects.create(matreq = mr_id, jo = jo_id, item = "LLDPE", quantity = LLDPE)
 
     return redirect('production:job_order_details', id = jo_id.id)

@@ -1,4 +1,4 @@
-<table>
+<table style="width:100%">
     <tbody>
     {% for form in formset %}
     <tr id="{{ form.prefix }}-row" class="formset_class">
@@ -8,12 +8,10 @@
                 <span class ="text-danger small">{{field.errors}}</span>
                 <th>{{field.label_tag}}</th>
                 <td>{{field}}</td>
-
-                {% for item in item %}
-                    <option value="{{ item.id }}">{{ item.item_name }}</option>
-                {% endfor %}
         {% endfor %}
     </tr>
     {% endfor %}
     </tbody>
 </table>
+    
+    

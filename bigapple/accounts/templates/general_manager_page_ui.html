@@ -105,15 +105,15 @@
                 </div>
                 <div class="item">
                     <b>Inventory</b>
-                    <a href="intentory_page.html" class="item">
-                            <i class="warehouse icon"></i>
-                        Raw Materials Inventory
+                    <a href="{% url 'inventory:inventory_item_list' %}" class="item">
+                        <i class="warehouse icon"></i>
+                        Inventory List
                     </a>
                     <a href="" class="item">
                         <i class="chart line icon"></i>
                         Inventory Forecast
                     </a>
-                    <a href="{% url 'sales:create-client-po-form' %}" class="item">
+                    <a href="{% url 'inventory:supplierPO_create' %}" class="item">
                         <i class="edit outline icon"></i>
                         Create Supplier Purchase Order
                     </a>

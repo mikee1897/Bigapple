@@ -65,6 +65,46 @@ class InventoryCountAsof(models.Model):
     def __str__(self):
         return str(self.date_counted) +' : ' + str(self.inventory)+ ' : ' + str(self.new_count)
 
+class MaterialRequisition(models.Model):
+    date_issued = models.DateField('date_issued', auto_now_add=True)
+    approval = models.BooleanField('approval', default=False)
+    status = models.CharField('status', default='waiting', max_length=200)
+    jo = models.ForeignKey(JobOrder, on_delete=models.CASCADE)
+
+    def __str__(self):
+        lead_zero = str(self.id).zfill(5)
+        control_number = '#%s' % (lead_zero)
+        return control_number
+
+
+class MaterialRequisitionItems(models.Model):
+    matreq = models.ForeignKey(MaterialRequisition, on_delete=models.CASCADE)
+    jo = models.ForeignKey(JobOrder, on_delete=models.CASCADE)
+    item = models.CharField('item', default='Not Specified', max_length=200)
+    quantity = models.IntegerField('quantity', default=0)
+
+    def __str__(self):
+        return str(self.matreq) +' : ' + str(self.id)
+
+class PurchaseRequisition(models.Model):
+    placed_by = models.ForeignKey(Employee, on_delete = models.CASCADE, null=True)
+    date_issued = models.DateField('date_issued', auto_now_add=True)
+    date_required = models.DateField('date_required')
+    approval = models.BooleanField('approval', default=False)
+    status = models.CharField('status', default='waiting', max_length=200)
+
+    def __str__(self):
+        lead_zero = str(self.id).zfill(5)
+        control_number = '#%s' % (lead_zero)
+        return control_number
+    
+class PurchaseRequisitionItems(models.Model):
+    purchreq = models.ForeignKey(PurchaseRequisition, on_delete=models.CASCADE)
+    item = models.ForeignKey(Inventory, on_delete=models.CASCADE)
+    quantity = models.IntegerField('quantity')
+
+    def __str__(self):
+        return str(self.purchreq) + ' : ' + str(self.item)
 
 class SupplierPO(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
@@ -107,58 +147,6 @@ class SupplierPOTracking(models.Model):
     def __str__(self):
         return self.supplier_po
 
-class MaterialRequisition(models.Model):
-    date_issued = models.DateField('date_issued', auto_now_add=True)
-    approval = models.BooleanField('approval', default=False)
-    status = models.CharField('status', default='waiting', max_length=200)
-    jo = models.ForeignKey(JobOrder, on_delete=models.CASCADE)
-
-    def __str__(self):
-        lead_zero = str(self.id).zfill(5)
-        control_number = '#%s' % (lead_zero)
-        return control_number
-
-
-class MaterialRequisitionItems(models.Model):
-    matreq = models.ForeignKey(MaterialRequisition, on_delete=models.CASCADE)
-    item = models.CharField('item', default='Not Specified', max_length=200)
-    quantity = models.IntegerField('quantity', default=0)
-
-    def __str__(self):
-        return str(self.matreq) +' : ' + str(self.id)
-
-class PurchaseRequisition(models.Model):
-    placed_by = models.ForeignKey(Employee, on_delete = models.CASCADE, null=True)
-    date_issued = models.DateField('date_issued', auto_now_add=True)
-    date_required = models.DateField('date_required')
-    approval = models.BooleanField('approval', default=False)
-    status = models.CharField('status', default='waiting', max_length=200)
-
-    def __str__(self):
-        lead_zero = str(self.id).zfill(5)
-        control_number = '#%s' % (lead_zero)
-        return control_number
-    
-class PurchaseRequisitionItems(models.Model):
-    purchreq = models.ForeignKey(PurchaseRequisition, on_delete=models.CASCADE)
-    item = models.ForeignKey(Inventory, on_delete=models.CASCADE)
-    quantity = models.IntegerField('quantity')
-
-    def __str__(self):
-        return str(self.purchreq) + ' : ' + str(self.item)
-
-'''
-class InventoryCountAsof(models.Model):
-    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)
-    person = models.ForeignKey(Employee, on_delete=models.CASCADE, default = 1)
-    old_count = models.IntegerField('old_count', default=0)
-    new_count = models.IntegerField('new_count', default=0)
-    date_counted = models.DateField('date_counted', auto_now_add=True)
-    time = models.TimeField('time', auto_now_add=True, blank=True)
-
-    def __str__(self):
-        return str(self.id) +' : '+str(self.inventory) +' : ' + str(self.date_counted)
-'''
 #TODO
 class SupplierSalesInvoice(models.Model):
     supplier_po = models.ForeignKey(SupplierPO, on_delete=models.CASCADE)

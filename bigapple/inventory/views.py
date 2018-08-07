@@ -134,11 +134,11 @@ def inventory_count_form(request, id):
                 c_form = form.save()
                 c_form = c_form.pk
                 cform_instance = InventoryCountAsof.objects.get(id=c_form) #get current form
-                cform_instance.person = current_employee.id
+                cform_instance.person = current_employee
                 cform_instance.save()
                 
         
-        return redirect('inventory:inventory_count_list', id = data.id)
+        return redirect('inventory:inventory_item_list')
     
     form.fields["inventory"].queryset = Inventory.objects.filter(id=data.id)
     form.fields["inventory"].initial = data.id
@@ -225,9 +225,15 @@ def supplier_rawmat_add(request):
     if title == 'Add Supplier Raw Material':
         if request.method == 'POST':
             if form.is_valid():
+                #get Supplier
+                sup = request.POST.get("supplier")
+                supplier = Supplier.objects.get(id = sup)
+                supplier.item_count = supplier.item_count + 1
+                supplier.save()
+                print(supplier)
+
                 if request.POST.get("item_type") == "Raw Materials":
                     rm = Inventory.objects.filter(item = request.POST.get("rm_type"))
-                    print(rm)
                     if rm.exists():
                         print("Item Exists")
                     else:
@@ -294,8 +300,11 @@ def supplier_rawmat_delete(request, id):
         template = 'production_manager_page_ui.html'
     else:
         template = 'line_leader_page_ui.html'
+
     items = SupplierRawMaterials.objects.get(id=id)
     data = Supplier.objects.get(id = items.supplier.id)
+    data.item_count = data.item_count + 1
+    data.save()
     items.delete()
     return redirect('inventory:supplier_details_list', id = data.id)
 
@@ -326,7 +335,7 @@ def materials_requisition_details(request, id):
     count = 0
     mr = MaterialRequisition.objects.get(id=id) #get MR
     mri = MaterialRequisitionItems.objects.filter(matreq=mr) #get MR Items 
-    style = "ui teal message"
+    style = "ui green message"
 
     for data in mri:
         i = Inventory.objects.filter(item = data.item)# get Inventory Items 
@@ -334,13 +343,12 @@ def materials_requisition_details(request, id):
             if x.quantity >= data.quantity:
                 count = count+1
     
-    if mri.count() == count:
-        style = "ui green message"
-    else:
-        style = "ui red message"
+    print("MR items:", mri.count())
+    print("# of approved: ",count)
 
-    mr = MaterialRequisition.objects.get(id=id)
-    mri = MaterialRequisitionItems.objects.filter(matreq=mr)
+    if mri.count() != count:
+        style = "ui red message"
+   
     context = {
         'mr' : mr,
         'title' : mr,
@@ -366,32 +374,29 @@ def materials_requisition_approval(request, id):
         for data in mri:
             i = Inventory.objects.filter(item = data.item)# get Inventory Items 
             for x in i:
-                print("MR items:",data.id, data.brand.item, data.quantity)
+                print("MR items:",data.id, data.item, data.quantity)
                 print("Inventory items:", x.id, x.item, x.quantity)
 
                 if x.quantity >= data.quantity:
                     count = count+1
 
-    print("MR items:", mri.count())
-    print("# of approved: ",count)
+        if mri.count() == count:
+            for data in mri:
+                i = Inventory.objects.filter(item = data.item) # get Inventory Items 
+                for x in i:
+                    if x.quantity >= data.quantity:
+                        x.quantity = (x.quantity - data.quantity)
+                        mr.approval = True
+                        mr.status = "approved"
+                        mr.save()
+                        x.save()
+                        print(x.quantity)
 
-    if mri.count() == count:
-        for data in mri:
-            i = Inventory.objects.filter(item = data.item) # get Inventory Items 
-            for x in i:
-                if x.quantity >= data.quantity:
-                    x.quantity = (x.quantity - data.quantity)
-                    mr.approval = True
-                    mr.status = "approved"
-                    mr.save()
-                    x.save()
-                    print(x.quantity)
+            messages.info(request, 'Material Requisitio has been approved!')
 
-        messages.success(request, 'Material Requisitio has been approved!')
-
-    else:
-        messages.warning(request, 'Insufficient Inventory!')
-        return redirect('inventory:materials_requisition_details', id = mr.id)
+        else:
+            messages.info(request, 'Insufficient Inventory!')
+            return redirect('inventory:materials_requisition_details', id = mr.id)
     
     return redirect('inventory:materials_requisition_details', id = mr.id)
 
@@ -507,46 +512,67 @@ def purchase_requisition_form(request):
 
 
 # Supplier PO
+def supplierPO_create(request):
+    if request.session['session_position'] == "General Manager":
+        template = 'general_manager_page_ui.html'
+    else:
+        template = 'sales_coordinator_page_ui.html'
 
-def supplierPO_form(request):
+    data = Supplier.objects.all()
+
+ 
+    for i in data:
+        item = SupplierRawMaterials.objects.filter(supplier = i.id)
+        count = item.count() 
+        print(count)       
+
+    print(item)
+
+    context={
+        'title' : "Choose Supplier",
+        'data' : data,
+        'item': item,
+        'template': template,
+    }
+    return render (request, 'inventory/supplierPO_create.html', context)
+
+def supplierPO_form(request, id):
     if request.session['session_position'] == "General Manager":
         template = 'general_manager_page_ui.html'
     elif request.session['session_position'] == "Production Manager":
         template = 'production_manager_page_ui.html'
     else:
         template = 'line_leader_page_ui.html'
+
     #note:instance should be an object
     supplierpo_item_formset = inlineformset_factory(SupplierPO, SupplierPOItems, form=SupplierPOItemsForm, extra=1, can_delete=True)
+    form = SupplierPOForm(request.POST)
+    #formset = SupplierPOItemsForm(request.POST)
+
+    # get Supplier
+    form.fields["supplier"].queryset = Supplier.objects.filter(id=id)
+    form.fields["supplier"].initial = Supplier.objects.filter(id=id)
+
+
 
     if request.method == "POST":
-        form = SupplierPOForm(request.POST)
-        #Set ClientPO.client from session user
-        #form.fields['client'].initial = Client.objects.get(id = request.session['session_userid'])
-        message = ""
+
         print(form)
         if form.is_valid():
-            #Save PO form then use newly saved ClientPO as instance for ClientPOItems
             new_form = form.save()
             new_form = new_form.pk
             form_instance = SupplierPO.objects.get(id=new_form)
 
             #Use PO form instance for PO items
-            formset = supplierpo_item_formset(request.POST, instance=form_instance)
-            print(formset)
+            # formset = supplierpo_item_formset(request.POST, instance=form_instance)
+            # formset = supplierpo_item_formset(queryset=SupplierRawMaterials.objects.all())
+
             if formset.is_valid():
                 for form in formset:
-                    form.save()
-
-                formset_items = SupplierPOItems.objects.filter(id = new_form)
-                formset_items_rm = SupplierRawMaterials.objects.filter(id = id)
-                formset_items.price = formset_items_rm.price 
-
-                formset_item_total = formset_items.aggregate(sum=aggregates.Sum('total_price'))['sum'] or 0
-
-                totalled_supplierpo = SupplierPO.objects.get(id=new_form)
-                totalled_supplierpo.total_amount = formset_item_total
-                totalled_supplierpo.save()
-                message = "PO successfully created"
+                    #form.save()
+                   
+                   
+                    message = "PO successfully created"
 
             else:
                 message += "Formset error"
@@ -554,38 +580,16 @@ def supplierPO_form(request):
         else:
             message = "Form is not valid"
 
+        return render(request, 'inventory/supplierPO_create.html',{'message': message})
 
-        #todo change index.html. page should be redirected after successful submission
-        return render(request, 'index.html',
-                              {'message': message}
-                              )
     else:
-        return render(request, 'inventory/supplierPO_form.html',
-                              {'formset':supplierpo_item_formset(),
-                               'form': SupplierPOForm,
-                               'template': template}
-                              )
-
-def supplierPO_form_test(request):
-    supplierpo_item_formset = inlineformset_factory(SupplierPO, SupplierPOItems, form=SupplierPOItemsForm, extra=1, can_delete=True)
-    # data = JobOrder.objects.get(id=id)
-    # form = PrintingScheduleForm(request.POST or None)
-    # print(form.errors)
-    # if request.method == 'POST':
-    #   if form.is_valid():
-    #     form.save()
-    #     return redirect('production:job_order_details', id = data.id)
+        context= {
+            'form': form,
+            'formset':supplierpo_item_formset(),
+            'template': template,
+        }
     
-    # context = {
-    #   'data': data,
-    #   'title' : data.job_order,
-    #   'form': form,
-    # }
-    
-    return render (request, 'inventory/supplierPO_form.html',
-                              {'formset':supplierpo_item_formset(),
-                               'form': SupplierPOForm}
-                              )
+        return render(request, 'inventory/supplierPO_form.html', context)
 
 def supplierPO_list(request):
     if request.session['session_position'] == "General Manager":

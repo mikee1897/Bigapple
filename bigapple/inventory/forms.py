@@ -75,17 +75,18 @@ class SupplierPOForm(ModelForm):
         model = SupplierPO
         fields = ('delivery_date', 'supplier')
         widgets = {
-            'delivery_date': DateInput()
+            'delivery_date': DateInput(attrs={'style': 'width:185px;'}),
+            'supplier': forms.Select(attrs={'class': 'ui dropdown', 'style': 'width:185px;'})
         }
 
-        supplier = forms.CharField(max_length=200, label = 'supplier', widget = forms.Select(attrs={'id':'supplier'}))
-        
 class SupplierPOItemsForm(ModelForm):
     class Meta:
         model = SupplierPOItems
         fields = ('item_name', 'quantity')
 
-        inventory = forms.ModelChoiceField(queryset=SupplierRawMaterials.objects.all())
+        item_name = forms.ModelChoiceField(queryset=SupplierRawMaterials.objects.all())
+
+       
     # def __init__(self, *args, **kwargs):
     #     super(SupplierPOItemsForm, self).__init__(*args, **kwargs)
     #     self.fields['item_name'].queryset = Inventory.objects.none()

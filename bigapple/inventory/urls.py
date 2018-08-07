@@ -29,7 +29,8 @@ urlpatterns = [
     path('inventory-count-form/<int:id>/', views.inventory_count_form, name='inventory_count_form'),
     path('inventory-count-list/<int:id>/', views.inventory_count_list, name='inventory_count_list'),
     #SupplierPO
-    path('supplierPO-form/', views.supplierPO_form, name='supplierPO_form'),
+    path('supplierPO-create/', views.supplierPO_create, name='supplierPO_create'),
+    path('supplierPO-form/<int:id>/', views.supplierPO_form, name='supplierPO_form'),
     path('supplierPO-list/', views.supplierPO_list, name='supplierPO_list'),
     path('supplierPO-details/<int:id>/', views.supplierPO_details, name='supplierPO_details'),
     path('ajax/load-items/', views.load_items, name='ajax_load_items'),
